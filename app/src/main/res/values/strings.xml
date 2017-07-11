@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">My Garage</string>
+
+    <string name="create">Create</string>
+    <string name="cancel">Cancel</string>
+    <string name="new_driver">New Driver</string>
+    <string name="new_driver_hint">Name</string>
+    <string name="new_driver_description">Description</string>
+    <string name="new_driver_age">Age</string>
+    <string name="new_driver_license">Valid</string>
+
+    <string name="new_vehicle">New Vehicle</string>
+    <string name="vehicle_model">Model</string>
+    <string name="vehicle_number">Number</string>
+    <string name="vehicle_used">Used</string>
+    <string name="vehicle_driver">Driver</string>
+</resources>

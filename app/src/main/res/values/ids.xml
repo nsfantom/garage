@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="driverName" type="id"/>
+    <item name="driverDescription" type="id"/>
+    <item name="driverAge" type="id"/>
+    <item name="driverValid" type="id"/>
+
+    <item name="vehicleModel" type="id"/>
+    <item name="vehicleNumber" type="id"/>
+    <item name="vehicleUsed" type="id"/>
+</resources>
