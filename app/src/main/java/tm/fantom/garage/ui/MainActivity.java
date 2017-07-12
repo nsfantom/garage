@@ -10,8 +10,7 @@ import tm.fantom.garage.R;
  */
 
 public final class MainActivity extends FragmentActivity
-        implements DriversFragment.Listener, VehiclesFragment.Listener
-{
+        implements DriversFragment.Listener, VehiclesFragment.Listener {
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState == null) {
@@ -22,11 +21,11 @@ public final class MainActivity extends FragmentActivity
     }
 
     @Override
-    public void onDriverClicked(long id) {
+    public void onDriverClicked(long driverId) {
         getSupportFragmentManager().beginTransaction()
                 .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left, R.anim.slide_in_left,
                         R.anim.slide_out_right)
-                .replace(android.R.id.content, VehiclesFragment.newInstance(id))
+                .replace(android.R.id.content, VehiclesFragment.newInstance(driverId))
                 .addToBackStack(null)
                 .commit();
     }
