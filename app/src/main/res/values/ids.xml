@@ -7,5 +7,5 @@
 
     <item name="vehicleModel" type="id"/>
     <item name="vehicleNumber" type="id"/>
-    <item name="vehicleUsed" type="id"/>
+    <item name="vehicleDamaged" type="id"/>
 </resources>

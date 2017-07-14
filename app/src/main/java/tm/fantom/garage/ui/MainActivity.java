@@ -10,8 +10,7 @@ import tm.fantom.garage.R;
  */
 
 public final class MainActivity extends FragmentActivity
-        implements DriversFragment.Listener, VehiclesFragment.Listener
-{
+        implements DriversFragment.Listener, VehiclesFragment.Listener {
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState == null) {
@@ -21,28 +20,28 @@ public final class MainActivity extends FragmentActivity
         }
     }
 
-    @Override
-    public void onDriverClicked(long id) {
+    @Override public void onDriverClicked(long driverId) {
         getSupportFragmentManager().beginTransaction()
                 .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left, R.anim.slide_in_left,
                         R.anim.slide_out_right)
-                .replace(android.R.id.content, VehiclesFragment.newInstance(id))
+                .replace(android.R.id.content, VehiclesFragment.newInstance(driverId))
                 .addToBackStack(null)
                 .commit();
     }
 
-    @Override
-    public void onNewDriverClicked() {
+    @Override public void onNewDriverClicked() {
         NewDriverFragment.newInstance().show(getSupportFragmentManager(), "new-driver");
     }
 
-    @Override
-    public void onNewVehicleClicked(long driverId) {
+    @Override public void onEditDriver(long id) {
+        EditDriverFragment.newInstance(id).show(getSupportFragmentManager(),"edit-driver");
+    }
+
+    @Override public void onNewVehicleClicked(long driverId) {
         NewVehicleFragment.newInstance(driverId).show(getSupportFragmentManager(), "new-vehicle");
     }
 
-    @Override
-    public void onEditVehicleClicked(long vehicleId) {
-
+    @Override public void onEditVehicleClicked(long vehicleId, long driverId) {
+        EditVehicleFragment.newInstance(vehicleId, driverId).show(getSupportFragmentManager(), "edit-vehicle");
     }
 }

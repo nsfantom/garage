@@ -19,26 +19,22 @@ public abstract class VehicleItem implements Parcelable {
     public static final String DRIVER_ID = "driver_id";
     public static final String DESCRIPTION = "description";
     public static final String NUMBER = "number";
-    public static final String IN_USE = "in_use";
+    public static final String DAMAGED = "damaged";
 
     public abstract long id();
     public abstract long driverId();
     public abstract String description();
     public abstract String number();
-    public abstract boolean inUse();
+    public abstract boolean isDamaged();
 
-    public static final Function<Cursor, VehicleItem> MAPPER = new Function<Cursor, VehicleItem>() {
-        @Override
-        public VehicleItem apply(Cursor cursor) {
-            long id = Db.getLong(cursor, ID);
-            long driverId = Db.getLong(cursor, DRIVER_ID);
-            String description = Db.getString(cursor, DESCRIPTION);
-            String number = Db.getString(cursor, NUMBER);
-            boolean inUse = Db.getBoolean(cursor, IN_USE);
-            return new AutoValue_VehicleItem(id, driverId, description, number, inUse);
-        }
+    public static final Function<Cursor, VehicleItem> MAPPER = cursor -> {
+        long id = Db.getLong(cursor, ID);
+        long driverId = Db.getLong(cursor, DRIVER_ID);
+        String description = Db.getString(cursor, DESCRIPTION);
+        String number = Db.getString(cursor, NUMBER);
+        boolean isDamaged = Db.getBoolean(cursor, DAMAGED);
+        return new AutoValue_VehicleItem(id, driverId, description, number, isDamaged);
     };
-
 
     public static final class Builder {
         private final ContentValues values = new ContentValues();
@@ -63,8 +59,8 @@ public abstract class VehicleItem implements Parcelable {
             return this;
         }
 
-        public Builder inUse(boolean inUse) {
-            values.put(IN_USE, inUse);
+        public Builder isDamaged(boolean isDamaged) {
+            values.put(DAMAGED, isDamaged);
             return this;
         }
 

@@ -33,18 +33,14 @@ abstract class DriversItem implements Parcelable {
             + " LEFT OUTER JOIN " + VehicleItem.TABLE + " AS " + ALIAS_VEHICLE + " ON " + DRIVER_ID + " = " + VEHICLE_DRIVER_ID
             + " GROUP BY " + DRIVER_ID;
 
-
-
     abstract long id();
     abstract String name();
     abstract int itemCount();
 
-    static Function<Cursor, DriversItem> MAPPER = new Function<Cursor, DriversItem>() {
-        @Override public DriversItem apply(Cursor cursor) {
-            long id = Db.getLong(cursor, DriverItem.ID);
-            String name = Db.getString(cursor, DriverItem.NAME);
-            int itemCount = Db.getInt(cursor, VEHICLE_COUNT);
-            return new AutoValue_DriversItem(id, name, itemCount);
-        }
+    static Function<Cursor, DriversItem> MAPPER = cursor -> {
+        long id = Db.getLong(cursor, DriverItem.ID);
+        String name = Db.getString(cursor, DriverItem.NAME);
+        int itemCount = Db.getInt(cursor, VEHICLE_COUNT);
+        return new AutoValue_DriversItem(id, name, itemCount);
     };
 }

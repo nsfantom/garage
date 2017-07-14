@@ -36,7 +36,7 @@ final class DbOpenHelper extends SQLiteOpenHelper {
             + VehicleItem.DRIVER_ID + " INTEGER NOT NULL REFERENCES " + DriverItem.TABLE + "(" + DriverItem.ID + "),"
             + VehicleItem.NUMBER + " TEXT NOT NULL,"
             + VehicleItem.DESCRIPTION + " TEXT NOT NULL,"
-            + VehicleItem.IN_USE + " INTEGER NOT NULL DEFAULT 0"
+            + VehicleItem.DAMAGED + " INTEGER NOT NULL DEFAULT 0"
             + ")";
     private static final String CREATE_DRIVER_ID_INDEX =
             "CREATE INDEX vehicle_driver_id ON " + VehicleItem.TABLE + " (" + VehicleItem.DRIVER_ID + ")";
@@ -50,6 +50,7 @@ final class DbOpenHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_VEHICLE);
         db.execSQL(CREATE_DRIVER_ID_INDEX);
 
+        // create sample content
         long incognitoId = db.insert(DriverItem.TABLE, null, new DriverItem.Builder()
                 .name("available")
                 .description("")
@@ -84,7 +85,7 @@ final class DbOpenHelper extends SQLiteOpenHelper {
                 .driverId(blondId)
                 .number("FluFFy")
                 .description("VW Beetle")
-                .inUse(true)
+                .isDamaged(true)
                 .build());
     }
 
