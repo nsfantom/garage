@@ -27,15 +27,13 @@ public abstract class DriverItem implements Parcelable{
     public abstract int age();
     public abstract boolean status();
 
-    public static final Function<Cursor, DriverItem> MAPPER = new Function<Cursor, DriverItem>() {
-        @Override public DriverItem apply(Cursor cursor) {
-            long id = Db.getLong(cursor, ID);
-            String name = Db.getString(cursor, NAME);
-            String description = Db.getString(cursor, DESCRIPTION);
-            int age = Db.getInt(cursor, AGE);
-            boolean status = Db.getBoolean(cursor, STATUS);
-            return new AutoValue_DriverItem(id, name, description, age, status);
-        }
+    public static final Function<Cursor, DriverItem> MAPPER = cursor -> {
+        long id = Db.getLong(cursor, ID);
+        String name = Db.getString(cursor, NAME);
+        String description = Db.getString(cursor, DESCRIPTION);
+        int age = Db.getInt(cursor, AGE);
+        boolean status = Db.getBoolean(cursor, STATUS);
+        return new AutoValue_DriverItem(id, name, description, age, status);
     };
 
     public static final class Builder {
