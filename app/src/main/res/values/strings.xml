@@ -12,6 +12,12 @@
     <string name="new_vehicle">New Vehicle</string>
     <string name="vehicle_model">Model</string>
     <string name="vehicle_number">Number</string>
-    <string name="vehicle_used">Used</string>
+    <string name="vehicle_damaged">Damaged</string>
     <string name="vehicle_driver">Driver</string>
+
+    <string name="error_invalid_name">Name is too short</string>
+    <string name="error_invalid_model">Model is too short</string>
+
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
 </resources>
