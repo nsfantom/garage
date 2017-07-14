@@ -6,18 +6,18 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
-import com.jakewharton.rxbinding2.widget.AdapterViewItemClickEvent;
 import com.jakewharton.rxbinding2.widget.RxAdapterView;
 import com.squareup.sqlbrite2.BriteDatabase;
-import com.squareup.sqlbrite2.SqlBrite;
 
 import javax.inject.Inject;
 
@@ -26,9 +26,6 @@ import butterknife.ButterKnife;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.functions.BiFunction;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import tm.fantom.garage.GarageApp;
 import tm.fantom.garage.R;
@@ -47,9 +44,9 @@ public final class VehiclesFragment extends Fragment {
     private static final String KEY_DRIVER_ID = "driver_id";
     private static final String DRIVER_QUERY = "SELECT * FROM "
             + VehicleItem.TABLE + " WHERE " + VehicleItem.DRIVER_ID
-            + " = ? ORDER BY " + VehicleItem.IN_USE + " ASC";
+            + " = ? ORDER BY " + VehicleItem.DAMAGED + " ASC";
     private static final String COUNT_QUERY = "SELECT COUNT(*) FROM "
-            + VehicleItem.TABLE + " WHERE " + VehicleItem.IN_USE + " = " + Db.BOOLEAN_FALSE
+            + VehicleItem.TABLE + " WHERE " + VehicleItem.DAMAGED + " = " + Db.BOOLEAN_FALSE
             + " AND " + VehicleItem.DRIVER_ID + " = ?";
     private static final String TITLE_QUERY = "SELECT " + DriverItem.NAME
             + " FROM " + DriverItem.TABLE + " WHERE " + DriverItem.ID + " = ?";
@@ -57,7 +54,7 @@ public final class VehiclesFragment extends Fragment {
     public interface Listener {
         void onNewVehicleClicked(long driverId);
 
-        void onEditVehicleClicked(long vehicleId);
+        void onEditVehicleClicked(long vehicleId, long driverId);
     }
 
     public static VehiclesFragment newInstance(long driverId) {
@@ -106,26 +103,51 @@ public final class VehiclesFragment extends Fragment {
         MenuItemCompat.setShowAsAction(item, SHOW_AS_ACTION_IF_ROOM | SHOW_AS_ACTION_WITH_TEXT);
     }
 
+    @Override public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        if (v.getId() == android.R.id.list) {
+            AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) menuInfo;
+            VehicleItem item = (VehicleItem) listView.getItemAtPosition(acmi.position);
+            MenuInflater inflater = getActivity().getMenuInflater();
+            inflater.inflate(R.menu.context_menu, menu);
+            menu.setHeaderTitle(item.description()); // Set model as title
+        }
+    }
+
+    @Override public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        switch (item.getItemId()) {
+            case R.id.edit:
+                VehicleItem vehicleToEdit = (VehicleItem) listView.getItemAtPosition(info.position);
+                listener.onEditVehicleClicked(vehicleToEdit.id(), vehicleToEdit.driverId());
+                return true;
+            case R.id.delete:
+                VehicleItem vehicleToDelete = (VehicleItem) listView.getItemAtPosition(info.position);
+                deleteVehicle(vehicleToDelete.id());
+                return true;
+            default:
+                return super.onContextItemSelected(item);
+        }
+    }
+
     @Override public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
                                        @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.vehicles, container, false);
     }
 
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    @Override public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ButterKnife.bind(this, view);
         listView.setEmptyView(emptyView);
         listView.setAdapter(adapter);
+        registerForContextMenu(listView);
 
         RxAdapterView.itemClickEvents(listView)
                 .observeOn(Schedulers.io())
-                .subscribe(new Consumer<AdapterViewItemClickEvent>() {
-                    @Override public void accept(AdapterViewItemClickEvent event) {
-                        boolean newValue = !adapter.getItem(event.position()).inUse();
-                        db.update(VehicleItem.TABLE, new VehicleItem.Builder().inUse(newValue).build(),
-                                VehicleItem.ID + " = ?", String.valueOf(event.id()));
-                    }
+                .subscribe(event -> {
+                    boolean newValue = !adapter.getItem(event.position()).isDamaged();
+                    db.update(VehicleItem.TABLE, new VehicleItem.Builder().isDamaged(newValue).build(),
+                            VehicleItem.ID + " = ?", String.valueOf(event.id()));
                 });
     }
 
@@ -136,45 +158,34 @@ public final class VehiclesFragment extends Fragment {
         disposables = new CompositeDisposable();
 
         Observable<Integer> itemCount = db.createQuery(VehicleItem.TABLE, COUNT_QUERY, driverId)
-                .map(new Function<SqlBrite.Query, Integer>() {
-                    @Override public Integer apply(SqlBrite.Query query) {
-                        Cursor cursor = query.run();
-                        try {
-                            if (!cursor.moveToNext()) {
-                                throw new AssertionError("No rows");
-                            }
-                            return cursor.getInt(0);
-                        } finally {
-                            cursor.close();
+                .map(query -> {
+                    Cursor cursor = query.run();
+                    try {
+                        if (!cursor.moveToNext()) {
+                            throw new AssertionError("No rows");
                         }
+                        return cursor.getInt(0);
+                    } finally {
+                        cursor.close();
                     }
                 });
         Observable<String> driverName =
-                db.createQuery(DriverItem.TABLE, TITLE_QUERY, driverId).map(new Function<SqlBrite.Query, String>() {
-                    @Override public String apply(SqlBrite.Query query) {
-                        Cursor cursor = query.run();
-                        try {
-                            if (!cursor.moveToNext()) {
-                                throw new AssertionError("No rows");
-                            }
-                            return cursor.getString(0);
-                        } finally {
-                            cursor.close();
+                db.createQuery(DriverItem.TABLE, TITLE_QUERY, driverId).map(query -> {
+                    Cursor cursor = query.run();
+                    try {
+                        if (!cursor.moveToNext()) {
+                            throw new AssertionError("No rows");
                         }
+                        return cursor.getString(0);
+                    } finally {
+                        cursor.close();
                     }
                 });
         disposables.add(
-                Observable.combineLatest(driverName, itemCount, new BiFunction<String, Integer, String>() {
-                    @Override public String apply(String driverName, Integer itemCount) {
-                        return driverName + " (" + itemCount + ")";
-                    }
-                })
+                Observable.combineLatest(driverName, itemCount, (driverName1, itemCount1) ->
+                        driverName1 + " (" + itemCount1 + ")")
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(new Consumer<String>() {
-                            @Override public void accept(String title) throws Exception {
-                                getActivity().setTitle(title);
-                            }
-                        }));
+                        .subscribe(title -> getActivity().setTitle(title)));
 
         disposables.add(db.createQuery(VehicleItem.TABLE, DRIVER_QUERY, driverId)
                 .mapToList(VehicleItem.MAPPER)
@@ -185,5 +196,9 @@ public final class VehiclesFragment extends Fragment {
     @Override public void onPause() {
         super.onPause();
         disposables.dispose();
+    }
+
+    private void deleteVehicle(long vehicleId){
+        db.delete(VehicleItem.TABLE, VehicleItem.ID + " = ?", String.valueOf(vehicleId));
     }
 }

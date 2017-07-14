@@ -56,4 +56,11 @@ final class DriversAdapter extends BaseAdapter implements Consumer<List<DriversI
 
         return convertView;
     }
+
+    public int getPositionById(long id){
+        for (DriversItem d: drivers) {
+            if(d.id() == id) return drivers.indexOf(d);
+        }
+        return 0;
+    }
 }

@@ -20,8 +20,7 @@ public final class MainActivity extends FragmentActivity
         }
     }
 
-    @Override
-    public void onDriverClicked(long driverId) {
+    @Override public void onDriverClicked(long driverId) {
         getSupportFragmentManager().beginTransaction()
                 .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left, R.anim.slide_in_left,
                         R.anim.slide_out_right)
@@ -30,18 +29,19 @@ public final class MainActivity extends FragmentActivity
                 .commit();
     }
 
-    @Override
-    public void onNewDriverClicked() {
+    @Override public void onNewDriverClicked() {
         NewDriverFragment.newInstance().show(getSupportFragmentManager(), "new-driver");
     }
 
-    @Override
-    public void onNewVehicleClicked(long driverId) {
+    @Override public void onEditDriver(long id) {
+        EditDriverFragment.newInstance(id).show(getSupportFragmentManager(),"edit-driver");
+    }
+
+    @Override public void onNewVehicleClicked(long driverId) {
         NewVehicleFragment.newInstance(driverId).show(getSupportFragmentManager(), "new-vehicle");
     }
 
-    @Override
-    public void onEditVehicleClicked(long vehicleId) {
-
+    @Override public void onEditVehicleClicked(long vehicleId, long driverId) {
+        EditVehicleFragment.newInstance(vehicleId, driverId).show(getSupportFragmentManager(), "edit-vehicle");
     }
 }

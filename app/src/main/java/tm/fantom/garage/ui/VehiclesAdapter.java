@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckedTextView;
-import android.widget.TextView;
 
 import java.util.Collections;
 import java.util.List;
@@ -57,10 +56,10 @@ final class VehiclesAdapter extends BaseAdapter implements Consumer<List<Vehicle
 
         VehicleItem item = getItem(position);
         CheckedTextView textView = (CheckedTextView) convertView;
-        textView.setChecked(item.inUse());
+        textView.setChecked(item.isDamaged());
 
         CharSequence description = item.description();
-        if (item.inUse()) {
+        if (item.isDamaged()) {
             SpannableString spannable = new SpannableString(description);
             spannable.setSpan(new StrikethroughSpan(), 0, description.length(), 0);
             description = spannable;
